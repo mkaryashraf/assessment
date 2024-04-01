@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <property name="byte" value="LONGBLOB" dbms="mysql" />
+    <property name="byte" value="bytea" dbms="postgresql" />
+
+    <changeSet author="Makary" id="1" >
+        <createTable tableName="item">
+            <column name="id" type="SERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="name" type="varchar(50)" />
+            <column name="type" type="varchar(50)" />
+            <column name="permission_group_id" type="Integer" />
+            <column name="parent_id" type="Integer" />
+        </createTable>
+
+        <createTable tableName="file">
+            <column name="id" type="SERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="data" type="${byte}" />
+            <column name="item_id" type="Integer" />
+            <column name="type" type="varchar(50)" />
+        </createTable>
+
+        <createTable tableName="permission">
+            <column name="id" type="SERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="user_email" type="varchar(50)" />
+            <column name="permission_level" type="varchar(50)" />
+            <column name="permission_group_id" type="Integer" />
+        </createTable>
+
+        <createTable tableName="permission_group">
+            <column name="id" type="SERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="group_name" type="varchar(50)" />
+        </createTable>
+
+
+        <addForeignKeyConstraint
+                baseColumnNames="parent_id" baseTableName="item"
+                constraintName="fk_item_parent" referencedColumnNames="id"
+                referencedTableName="item" />
+
+        <addForeignKeyConstraint
+                baseColumnNames="permission_group_id" baseTableName="permission"
+                constraintName="fk_permission_group_permission" referencedColumnNames="id"
+                referencedTableName="permission_group" />
+
+        <addForeignKeyConstraint
+                baseColumnNames="item_id" baseTableName="file"
+                constraintName="fk_file_item" referencedColumnNames="id"
+                referencedTableName="item" />
+
+        <addForeignKeyConstraint
+                baseColumnNames="permission_group_id" baseTableName="item"
+                constraintName="fk_item_permission_group" referencedColumnNames="id"
+                referencedTableName="permission_group" />
+        <addUniqueConstraint
+                tableName="item"
+                columnNames="name,parent_id"
+                constraintName="uk_item_parent" />
+
+       <sql> ALTER TABLE item ADD CONSTRAINT group_permission_type_ck check
+        (
+        type = 'space' AND type IS NOT NULL AND permission_group_id IS NOT NULL
+        OR type != 'space'  AND parent_id IS NOT NULL
+        )
+       </sql>
+    </changeSet>
+
+</databaseChangeLog>

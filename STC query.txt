@@ -1,0 +1,6 @@
+SELECT user.user_id, username, training_id, training_date, Count(training_id) from user
+inner join training_details
+on user.user_id = training_details.user_id
+GROUP BY user.user_id, training_id
+Having Count(training_id) > 1
+ORDER BY training_date desc
